@@ -1,5 +1,8 @@
 class User{
-  constructor(name = "", installments = 0, debt = 0.0, totalInstallments = []){
+  constructor(name = "", installments = 0, debt = 0.0, totalInstallments = [], maxInstallments = 10){
+    this.minInstallments = 2;
+    this.minInstallmentsFreeTax = 3;
+    this.maxInstallments = maxInstallments;
     this.name = name;
     this.installments = installments;
     this.debt = debt;
@@ -18,29 +21,24 @@ class User{
     return this.totalInstallments;
   }
   calculate(){
-    switch (this.installments) {
-      case 2:
-        alert("Resultado: " + this.debt/2);
-        this.totalInstallments.push({nInstallment: 2, installments: this.debt/2});
-        break;
-      case 3:
-        alert("Resultado: " + this.debt/3);
-        this.totalInstallments.push({nInstallment: 3, installments: this.debt/3});
-        break;
-      case 4:
-        alert("Resultado: " + this.debt/4);
-        this.totalInstallments.push({nInstallment: 4, installments: this.debt/4});
-        break;
-      case 5:
-        alert("Resultado: " + this.debt/5);
-        this.totalInstallments.push({nInstallment: 5, installments: this.debt/5});
-        break;
-      case 6:
-        alert("Resultado: " + this.debt/6);
-        this.totalInstallments.push({nInstallment: 6, installments: this.debt/6});
-        break;
-      default:
-        alert(this.name + ", o número mínimo de parcelas é 2 e o máximo é 6! Por favor, insira um número de parcelas válido.");
+    if(this.installments < this.minInstallments || this.installments > this.maxInstallments){
+      alert(this.name + 
+        ", o número mínimo de parcelas é " + 
+        this.minInstallments + 
+        " e o máximo é " + 
+        this.maxInstallments + 
+        "! Por favor, insira um número de parcelas válido."
+      );
+    }else{
+      alert("Resultado: " + this.debt/this.installments);
+      this.totalInstallments.push(
+        {
+          nInstallment: this.installments,
+          installments: this.debt/this.installments,
+          debtWithInterest: null,
+          installmentWithInterest: null
+        }
+      );
     }
   }
 }
@@ -52,32 +50,35 @@ function dados() {
   let text = "";
   let name = prompt("Por favor, insira seu nome: ", "Coder Estudante");
   client.setName(name);
-
-  if (client.name == null || client.name == "") {
-    text = "Usuário cancelou a simulação.";
+  if (client.name == "") {
+    alert("Usuário cancelou a simulação.");
   } else {
-    text = "Olá, " + client.name + "! " + "Vamos iniciar a simulação das parcelas. ";
-    document.getElementById("text").innerHTML = text;
+    alert("Olá, " + client.name + "! " + "Vamos iniciar a simulação das parcelas. ");
   }
+  document.getElementById("text").innerHTML = text;
 }
 
-function computeInterestRate(debt = 0, installments = 0){
-  return debt * Math.pow(1 + interestRate, installments);
+function computeInstallmentWithInterest(debt = 0, {nInstallment}){
+  if((debt ?? "Nullish") || (nInstallment ?? "Nullish")){
+    return (debt * Math.pow(1 + interestRate, nInstallment));
+  }
+  return null
 }
 
+// function getStandardDeviation (array) {
+//   const n = array.length
+//   const mean = array.reduce((a, b) => a + b) / n
+//   return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+// }
 
 function parcelas() {
-  if(client.name == ""){
-    // Validação para não quebrar a mensagem default do switch.
-    client.setName("Coder Estudante");
-  }
-
+  client.setName(client?.name == "" ? "Coder Estudante" : client?.name);
   let installments = "";
   let debt = parseFloat(prompt("Inserir o valor total a ser dividido: "));
   client.setDebt(debt);
 
   do {
-    installments = prompt("Em quantas vezes deseja parcelar (min 2, max. 6x)?: \nOBS: Digite 'sair' para cancelar a operação.");
+    installments = prompt("Em quantas vezes deseja parcelar (min " + client.minInstallments + ", max. " + client.maxInstallments + ")?: \nOBS: Digite 'sair' para cancelar a operação.");
     if(installments != "sair"){
       client.setInstallments(installments);
       client.installments = parseFloat(client.installments);
@@ -85,23 +86,34 @@ function parcelas() {
       console.log(client.installments);
     }
   }while (installments != "sair");
-  // alert(computeInterestRate(1000, 5));
-  // alert(
-  //   client.totalInstallments.forEach(
-  //     (o) => {
-  //       if(o.installments > 3){
-  //         computeInterestRate(o.debt, o.installments); 
-  //       }
-  //     }
-  //   )
-  // );
-  client.totalInstallments.forEach(
-    (o) => {
+
+  let clientDebt = client?.debt
+  let allInstallments = []; 
+  client?.totalInstallments.forEach( o => {
+    if(o.nInstallment > client.minInstallmentsFreeTax){ // Cobra juros se o número de parcelas for maior que o minimo sem juros
+      o.debtWithInterest = computeInstallmentWithInterest(clientDebt, o);
+      o.installmentWithInterest = o.debtWithInterest/o.nInstallment;
       alert(
         "Total: " + client.debt +
-        "\nParcelas: " + o.nInstallment + 
-        "\nValor mensal: " + o.installments
+        "\nNúmero de Parcelas: " + o.nInstallment + 
+        "\nParcela: " + o.installments +
+        "\nTotal com juros: " + o.debtWithInterest.toFixed(2) +
+        "\nParcela com juros: " + o.installmentWithInterest.toFixed(2) +
+        "\n\nOBS: Para número de parcelas acima de " + client.minInstallmentsFreeTax + ", será acrescido de " + interestRate*100 + "% ao mês!"
       )
-    }  
+      allInstallments.push(o.debtWithInterest.toFixed(2));
+    }else{
+      alert(
+        "Total: " + clientDebt +
+        "\nNúmero de Parcelas: " + o.nInstallment + 
+        "\nParcela: " + o.installments
+      )
+      allInstallments.push(o.installments.toFixed(2));
+    }
+  });
+  alert(
+    "+ Valores simulados: " +
+    "\nMenor valor devido: " + client.debt +
+    "\nMaior valor devido: " + Math.max(...allInstallments)
   );
 }
