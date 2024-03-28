@@ -3,18 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index.css"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
     <title>Document</title>
+    
     <script src="./index.js"></script>
+    
   </head>
   <body>
-    <div>
-      <h2>Simulador de parcelas</h2>
-      <h3>Uma forma fácil de calcular o valor mensal a ser pago!</h3>
-      <button onclick="dados()">Vamos começar!</button>
+    <header class="background-color">
+      <div class="nav-head">
+        <img class="logo" src="../img/Prancheta 2@2x.png " width="36px">
+        <h2>Coder<span class="coloring">Bank</span></h2>      
+      </div>
+      
+    </header>
+    
+    <div class="container-1">
+      <h3>Simule seu <br>
+      empréstimo!</h3>
+      <img src="../img/undraw_transfer_money_re_6o1h.svg" width="400px">
+      <button class="separate-btn" onclick="dados()">Vamos começar!</button>
       <p id="text"></p>
     </div>
-    <div id="result">
-      <h3>Insira o valor para calcular as parcelas</h3>
+    <div class="container-2" id="result">
+      <h3>Insira o valor <br> para calcular <br> as parcelas.</h3>
+      <img src="../img/undraw_online_banking_re_kwqh.svg" width="480px">
       <button onclick="parcelas()">Calcular!</button>
       <p id="valor"></p>
     </div>
